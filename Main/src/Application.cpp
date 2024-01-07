@@ -992,6 +992,45 @@ bool Application::m_Init()
 		}
 	}
 
+	if (Path::gameDir.empty()) {
+		char* xdgDataDir = std::getenv("XDG_DATA_HOME");
+
+		if (xdgDataDir) {
+			String gameDir = Utility::Sprintf("%s%c%s", xdgDataDir, Path::sep, "unnamed-sdvx-clone");
+			auto executableDir = Path::RemoveLast(Path::GetExecutablePath());
+
+			Path::gameDir = gameDir;
+
+			if (!Path::IsDirectory(gameDir)) {
+				Logf("%s does not yet exist. Creating...", Logger::Severity::Info, *gameDir);
+
+				auto response = Path::CreateDir(gameDir);
+				if (response == 1) {
+					Logf("Created: %s", Logger::Severity::Info, *gameDir, response);
+				} else {
+					Logf("Failed creating directory %s. The game will probably crash soon.", Logger::Severity::Info, *gameDir, response);
+				}
+
+				std::list<String> requiredDirectories = { "skins", "fonts", "audio", "LightPlugins" };
+
+				for (String directory : requiredDirectories) {
+					auto sourceDir = Utility::Sprintf("%s%c%s", executableDir, Path::sep, directory);
+					auto destDir = Path::Absolute(directory);
+
+					response = Path::CopyDir(sourceDir, destDir);
+					if (response == 1) {
+						Logf("Copied: %s to %s", Logger::Severity::Info, *sourceDir, *destDir, response);
+					} else {
+						Logf("Failed copying %s to %s. The game will probably crash soon.", Logger::Severity::Error, *sourceDir, *destDir, response);
+					}
+				}
+
+			} else {
+				Logf("Setting gamedir to $XDG_DATA_HOME (%s). If data is missing, you can either copy the game data in %s to that directory, unset the $XDG_DATA_HOME variable or run the game with -gamedir=%s", Logger::Severity::Warning, *gameDir, *executableDir, *executableDir);
+			}
+		}
+	}
+
 	// Set the locale so that functions such as `fopen` use UTF-8.
 	{
 		String prevLocale = setlocale(LC_CTYPE, nullptr);

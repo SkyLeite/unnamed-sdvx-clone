@@ -68,6 +68,7 @@ Just run 'usc-game' or 'usc-game_Debug' from within the 'bin' folder.
 - `-autoskip` - Skips beginning of song to the first chart note
 - `-debug` - Used to show relevant debug info in game such as hit timings, and scoring debug info
 - `-test` - Runs test scene, for development purposes only
+- `-gamedir` - Sets the directory the game loads assets from. If unset, attempts reading from `$XDG_DATA_HOME/unnamed-sdvx-clone`. Finally, uses the executable directory if all else fails.
 
 ## How to build:
 
